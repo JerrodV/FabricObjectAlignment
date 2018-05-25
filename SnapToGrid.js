@@ -69,7 +69,7 @@
         settingsChanged: function () {
             AlignObject.removeAllLines();
             AlignObject.settings.get();
-            var ao = blossom.editor.selectedObject.cur;
+            var ao = project.editor.selectedObject.cur;
             if (ao) {
                 AlignObject.updateLines();
             }
@@ -77,7 +77,7 @@
     },      
     updateLines: function (skewing) {
         //console.info('updating lines');
-        var obj = blossom.editor.selectedObject.cur;
+        var obj = project.editor.selectedObject.cur;
         var canvas = null;
         if (obj && obj.isType('group')) {
             if (obj.item(0)) {
@@ -377,10 +377,10 @@
     },
     drawLine: function (side, pos) {
         var ln = null;        
-        if (!blossom.editor.selectedObject.cur.canvas) { return; }
+        if (!project.editor.selectedObject.cur.canvas) { return; }
         var cDims = {
-            height: blossom.editor.selectedObject.cur.canvas.height,
-            width: blossom.editor.selectedObject.cur.canvas.width
+            height: project.editor.selectedObject.cur.canvas.height,
+            width: project.editor.selectedObject.cur.canvas.width
         };
 
         switch (side) {
@@ -423,34 +423,34 @@
         }
         AlignObject.lines[side] = ln;
         AlignObject.lines.matches[side] = true;
-        blossom.editor.selectedObject.cur.canvas.add(ln).renderAll();
+        project.editor.selectedObject.cur.canvas.add(ln).renderAll();
     },
     removeAllLines: function (canvas) {
         for (var i in AlignObject.lines) {
             if (AlignObject.lines[i]) {
-                blossom.editor.selectedObject.cur.canvas.remove(AlignObject.lines[i]);               
+                project.editor.selectedObject.cur.canvas.remove(AlignObject.lines[i]);               
             }
         }
-        blossom.editor.selectedObject.cur.canvas.renderAll();
+        bloprojectssom.editor.selectedObject.cur.canvas.renderAll();
     },
-    alignTolerance: 6 * blossom.canvasScale,
+    alignTolerance: 6 * project.canvasScale,
     inRange: function (val1, val2) {
         return Math.max(val1, val2) - Math.min(val1, val2) <= AlignObject.alignTolerance;
     },
     snap: function (side, pos) {
-        if (blossom.editor.selectedObject.cur) {
-            AlignObject.originToTopLeft(blossom.editor.selectedObject.cur);
+        if (project.editor.selectedObject.cur) {
+            AlignObject.originToTopLeft(project.editor.selectedObject.cur);
             if (AlignObject._ignoreSnap || AlignObject._leftSet && side === 'left' || AlignObject._topSet && side === 'top') { return; }
-            blossom.editor.selectedObject.cur.set(side, Math.floor(pos)).setCoords();
+            project.editor.selectedObject.cur.set(side, Math.floor(pos)).setCoords();
             AlignObject['_' + side] = true;            
-            AlignObject.originToCenter(blossom.editor.selectedObject.cur);
+            AlignObject.originToCenter(project.editor.selectedObject.cur);
         }
     }, 
     skewTo: function (side, pos) {
 
     },
     drawBounds: function (obj) {
-        var obj = blossom.editor.selectedObject.cur;
+        var obj = project.editor.selectedObject.cur;
         //Don't log anything in this function or you will hate it        
         if (!obj || !AlignObject._drawBounds) { return; }
         obj.setCoords();
