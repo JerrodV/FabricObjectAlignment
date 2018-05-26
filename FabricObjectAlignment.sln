@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2000
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FabricObjectAlignment", "FabricObjectAlignment\FabricObjectAlignment.csproj", "{9EF75A99-024C-43DA-A80A-DBBFE194D04D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9EF75A99-024C-43DA-A80A-DBBFE194D04D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9EF75A99-024C-43DA-A80A-DBBFE194D04D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9EF75A99-024C-43DA-A80A-DBBFE194D04D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9EF75A99-024C-43DA-A80A-DBBFE194D04D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E091D533-6FB8-470F-912D-8F0391EDCD05}
+	EndGlobalSection
+EndGlobal
