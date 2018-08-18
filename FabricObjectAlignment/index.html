@@ -11,11 +11,12 @@
         <div class="col-12">
             <header class="jumbotron jumbotron-fluid p-5">
                 <h1>Fabric Object Align</h1>
-                <h2>A work in progress</h2>
-                <h4 id="version">version:</h4>
+                <h3>Demo (work in progress)</h3>
+                <h4>Fabric version: 2.3.5 (and should work on all lower versions)</h4>
             </header>
         </div>
     </div>
+
     <main>
         <div class="row">
             <div class="col-6">
@@ -23,8 +24,9 @@
                     <div class="row">
                         <fieldset>
                             <legend>Data:</legend>
-
-                            [Interesting data here]
+                            <span>Alignment Checks Made: </span><span id="alignChecksMade"></span><br />
+                            <span>Lines Drawn: </span><span id="linesDrawn"></span><br />
+                            <span>Lines Removed: </span><span id="linesRemoved"></span>
                         </fieldset>
                     </div>
                 </div>
@@ -32,10 +34,28 @@
             <div class="col-6">
                 <div class="container">
                     <div class="row">
-                        <fieldset>
+                        <fieldset id="settings">
                             <legend>Settings:</legend>
-                            [Settings here]
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="align" checked="checked" title="Toggles alignment on/off" />
+                                <label class="form-check-label" for="align" title="Toggles alignment on/off">Align/Toggle</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="box" checked="checked" title="Checks for inner edge alignment" />
+                                <label class="form-check-label" for="box" title="Checks for inner edge alignment">Align Box</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="outer" checked="checked" title="Checks for outer edge alignment" />
+                                <label class="form-check-label" for="outer" title="Checks for outer edge alignment">Align Outer</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="origin" checked="checked" title="Checks for center point alignment" />
+                                <label class="form-check-label" for="origin" title="Checks for center point alignment">Align Origin</label>
+                            </div>
                         </fieldset>
+                    </div>
+                    <div class="row">
+                        <p class="text-info text-center">Hint: This works with Fabrics default grouping behavior.</p>
                     </div>
                 </div>
             </div>
@@ -47,10 +67,11 @@
         </div>
         <div class="row"></div>
     </main>
+
     <footer>
         Play Nice!
     </footer>
-    
+
     <scripts>
         <script src="Scripts/jquery-3.3.1.min.js"></script>
         <script src="Scripts/popper.min.js"></script>

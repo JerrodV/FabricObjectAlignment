@@ -1,13 +1,20 @@
-﻿AlignObject = {
+﻿var AlignObject = {
+    //This will hold the fabric canvas
     _ctx: null,
+    //These next two are used repeatedly
     _topSet: false,
     _leftSet: false,
     _ignoreSnap: false,//For Debug Only
-    _drawBounds: false,//True to draw bounding lines around selected object being rotated
-    setContext: function (fabricCanvas) {
-        AlignObject._ctx = fabricCanvas;
+    _drawBounds: false,//True to draw bounding lines around selected object being rotated    
+    alignTolerance: 6 * 1,//We may want to cover canvas scaling. If that is the case, the 1 can be set to a variable for manipulation
+    details: {
+        alignmentCheckCount: 0,
+        linesDrawn: 0,
+        linesRemoved: 0
     },
     lines: {
+        //This object represents the possible lines we might draw
+        //The matches sub-object lets me keep track of lines that need to be removed. I may change this later.
         //Box Lines
         top: null,
         left: null,
@@ -62,40 +69,27 @@
         box: true,
         outer: true,
         origin: true,
-        //We no longer need to get these from the UI. I've set the previously null values above.
-        //get: function () {
-        //    AlignObject.settings.align = true;//If false, this code is a brick.
-        //    AlignObject.settings.box = true;
-        //    AlignObject.settings.outer = true;
-        //    AlignObject.settings.origin = true;            
-        //    return AlignObject.settings;
-        //},
+        set: function (name, value) {
+            AlignObject.settings[name] = value;
+            AlignObject.settings.settingsChanged();
+        },
         settingsChanged: function () {
             AlignObject.removeAllLines();
-            AlignObject.settings.get();
             var obj = AlignObject._ctx.getActiveObject();
             if (obj) {
                 AlignObject.updateLines();
             }
         }
     },      
+    setContext: function (fabricCanvas) {
+        AlignObject._ctx = fabricCanvas;
+    },
     updateLines: function (skewing) {
         
-        var obj = AlignObject._ctx.getActiveObject();
-        var canvas = null;
-        if (obj && obj.isType('group')) {
-            if (obj.item(0)) {
-                canvas = obj.item(0).canvas;
-            }
-        }
-        else {
-            canvas = obj.canvas;
-        }
-
-        if (!canvas) { return; }
-
+        var obj = AlignObject._ctx.getActiveObject();        
+        
         if (!AlignObject.settings.align || !obj) {
-            AlignObject.removeAllLines(canvas);            
+            AlignObject.removeAllLines();            
             return;
         }
 
@@ -107,22 +101,17 @@
         //$('#curObj').html(JSON.stringify(curPos, null, '\t'));
         //Set up an object that will let us be able to keep track of newly created lines
         for (var _m in AlignObject.lines.matches) { AlignObject.lines.matches[_m] = false; }
-
-        //Get the objects from the canvas
-        var objects = canvas.getObjects();
-
-        var settings = AlignObject.settings;
-
+        var objects = AlignObject._ctx.getObjects();
         //For each object
         for (var i in objects) {
             
             var thisObj = objects[i];
             
-            var groupContainsObj = obj.contains && obj.contains(objects[i]) || false;
+            var groupContainsObj = obj.contains && obj.contains(thisObj) || false;
 
 
             //If the object we are looking at is a line or the object being manipulated, skip it
-            //if (thisObj === obj || thisObj.get('type') === 'line' || groupContainsObj || thisObj.elementType == 'pageNumber') { continue; }
+            if (thisObj === obj || thisObj.get('type') === 'line' || groupContainsObj || thisObj.elementType === 'pageNumber') { continue; }
 
             //Set up an object representing the position of the canvas objects                
             var objPos = new Pos(thisObj);
@@ -132,8 +121,7 @@
 
             //Look at all sides and the origins of the object and see if the object being manipulated aligns.            
             ///*//Box////////////////////////////////////
-            if (settings.box) {
-
+            if (AlignObject.settings.box) {                
                 ///*//Top////////////////////////////////////
                 if (AlignObject.inRange(objPos.top, curPos.top)) {
                     //We match. If we don't already have a line on that side, add one.
@@ -147,6 +135,7 @@
                     }
                 }
                 //*/
+                
                 ///*//Left////////////////////////////////////
                 if (AlignObject.inRange(objPos.left, curPos.left)) {
                     if (!AlignObject.lines.left) {
@@ -158,6 +147,7 @@
                     }
                 }
                 //*/
+                
                 ///*//Right////////////////////////////////////
                 if (AlignObject.inRange(objPos.right, curPos.right)) {
                     if (!AlignObject.lines.right) {
@@ -179,7 +169,7 @@
                         }
                     }
                 }
-
+                
                 ///*//Box Origin////////////////////////////////////
                 if (settings.origin) {
                     //*/
@@ -193,6 +183,7 @@
                             }
                         }
                     }
+                    AlignObject.details.alignmentCheckCount++;
                     //*/
                     ///*//Origin: Bottom to Middle////////////////////////////////////
                     if (AlignObject.inRange(objPos.middle, curPos.bottom)) {
@@ -204,6 +195,7 @@
                             }
                         }
                     }
+                    AlignObject.details.alignmentCheckCount++;
                     //*/
                     ///*//Origin: Left to Center////////////////////////////////////
                     if (AlignObject.inRange(objPos.center, curPos.left)) {
@@ -215,6 +207,7 @@
                             }
                         }
                     }
+                    AlignObject.details.alignmentCheckCount++;
                     //*/
                     ///*//Origin: Right to Center////////////////////////////////////
                     if (AlignObject.inRange(objPos.center, curPos.right)) {
@@ -226,15 +219,16 @@
                             }
                         }
                     }
+                    AlignObject.details.alignmentCheckCount++;
                     //*/
                 }
                 //*/
-
             }
             //*/
 
             ///*//Origin////////////////////////////////////
-            if (settings.origin) {
+            if (AlignObject.settings.origin) {
+                AlignObject.details.alignmentCheckCount++;
                 ///*//Center////////////////////////////////////
                 if (AlignObject.inRange(objPos.center, curPos.center)) {
                     if (!AlignObject.lines.center) {
@@ -246,6 +240,7 @@
                     }
                 }
                 //*/
+                AlignObject.details.alignmentCheckCount++;
                 ///*//Middle////////////////////////////////////
                 if (AlignObject.inRange(objPos.middle, curPos.middle)) {
                     if (!AlignObject.lines.middle) {
@@ -257,11 +252,12 @@
                     }
                 }
                 //*/
+                AlignObject.details.alignmentCheckCount++;
             }
             //*/
 
             ///*//Outer////////////////////////////////////
-            if (settings.outer) {
+            if (AlignObject.settings.outer) {
 
                 ///*//Top To Bottom
                 if (AlignObject.inRange(objPos.bottom, curPos.top)) {
@@ -364,15 +360,17 @@
                 var m = AlignObject.lines.matches[j];
                 var line = AlignObject.lines[j];
                 if (!m && line) {
-                    canvas.remove(line);
+                    AlignObject._ctx.remove(line);
+                    AlignObject.details.linesRemoved++;
                     AlignObject.lines[j] = null;
                 }
 
             }
         }
-        canvas.renderAll();
+        AlignObject._ctx.renderAll();
     },
     drawLine: function (side, pos) {
+        AlignObject.details.linesDrawn++;
         var ln = null;        
         if (!AlignObject._ctx) { return; }
         var cDims = {
@@ -423,33 +421,32 @@
         AlignObject.lines.matches[side] = true;
         AlignObject._ctx.add(ln).renderAll();
     },
-    removeAllLines: function (canvas) {
+    removeAllLines: function () {
         for (var i in AlignObject.lines) {
             if (AlignObject.lines[i]) {
-                AlignObject._ctx.remove(AlignObject.lines[i]);               
+                AlignObject._ctx.remove(AlignObject.lines[i]);     
+                AlignObject.details.linesRemoved++;
             }
         }
         AlignObject._ctx.renderAll();
-    },
-    alignTolerance: 6 * 1,//We may want to cover canvas scaling. If that is the case, the 1 can be set to a variable for manipulation 
+    },    
     inRange: function (val1, val2) {
+        AlignObject.details.alignmentCheckCount++;
         return Math.max(val1, val2) - Math.min(val1, val2) <= AlignObject.alignTolerance;
     },
     snap: function (side, pos) {
         var obj = AlignObject._ctx.getActiveObject();
-        if (obj) {
-            AlignObject.originToTopLeft(obj);
+        if (obj) {            
             if (AlignObject._ignoreSnap || AlignObject._leftSet && side === 'left' || AlignObject._topSet && side === 'top') { return; }
             obj.set(side, Math.floor(pos)).setCoords();
-            AlignObject['_' + side] = true;            
-            AlignObject.originToCenter(obj);
+            AlignObject['_' + side] = true;
         }
     }, 
     skewTo: function (side, pos) {
         //My client chose not to add a snap when scaling
     },
     drawBounds: function (obj) {
-        var obj = AlignObject._ctx.getActiveObject();
+        obj = obj || AlignObject._ctx.getActiveObject();
         //Don't log anything in this function or you will hate it        
         if (!obj || !AlignObject._drawBounds) { return; }
         obj.setCoords();
@@ -464,13 +461,13 @@
     },
     originToTopLeft: function (obj) {
         obj.setCoords();
-        var width = obj.getWidth();
-        var height = obj.getHeight();
+        var width = obj.get('width');
+        var height = obj.get('height');
 
-        var newLeft = obj.getLeft() - (width / 2);
+        var newLeft = obj.get('left') - width / 2;
         obj.set("left", newLeft);
 
-        var newTop = obj.getTop() - (height / 2);
+        var newTop = obj.get('top') - height / 2;
         obj.set("top", newTop);
 
         obj.set("originX", "left").set("originY", "top");
@@ -480,13 +477,13 @@
     },
     originToCenter: function (obj) {
         obj.setCoords();
-        var width = obj.getWidth();
-        var height = obj.getHeight();
+        var width = obj.get('width');
+        var height = obj.get('height');
 
-        var newLeft = obj.getLeft() + (width / 2);
+        var newLeft = obj.get('left') + width / 2;
         obj.set("left", newLeft);
 
-        var newTop = obj.getTop() + (height / 2);
+        var newTop = obj.get('top') + height / 2;
         obj.set("top", newTop);
 
         obj.set("originX", "center");
@@ -498,17 +495,15 @@
 
 ///This little object was really helpful in keeping track of what I was trying to line up.
 var Pos = function (fabobj) {
-    var originCoords = fabobj.getPointByOrigin();
-    AlignObject.originToTopLeft(fabobj);
-    this.hasAngle = fabobj.get('angle') != 0;
+    var originCoords = fabobj.getPointByOrigin();    
+    this.hasAngle = fabobj.get('angle') !== 0;
     this.bounds = fabobj.getBoundingRect();
-    this.top = parseInt(this.hasAngle ? this.bounds.top : fabobj.getTop());
-    this.left = parseInt(this.hasAngle ? this.bounds.left : fabobj.getLeft());
-    this.height = parseInt(this.hasAngle ? this.bounds.height : fabobj.getHeight() - 1);
-    this.width = parseInt(this.hasAngle ? this.bounds.width : fabobj.getWidth() - 1);
+    this.top = parseInt(this.hasAngle ? this.bounds.top : fabobj.get('top'));
+    this.left = parseInt(this.hasAngle ? this.bounds.left : fabobj.get('left'));
+    this.height = parseInt(this.hasAngle ? this.bounds.height : fabobj.get('height') - 1);
+    this.width = parseInt(this.hasAngle ? this.bounds.width : fabobj.get('width') - 1);
     this.right = parseInt(this.left + this.width);
     this.bottom = parseInt(this.top + this.height);
     this.center = parseInt(originCoords.x);
-    this.middle = parseInt(originCoords.y);
-    AlignObject.originToCenter(fabobj);
+    this.middle = parseInt(originCoords.y);    
 };
